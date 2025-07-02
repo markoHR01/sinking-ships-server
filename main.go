@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 	"strings"
@@ -9,29 +8,43 @@ import (
 
 const serverPort = ":22335"
 
+func readMessage(data []byte) map[string]string {
+	message := make(map[string]string)
+	input := string(data)
+
+	msgLines := strings.Split(input, "\n")
+	for _, msgLine := range msgLines {
+		keyValue := strings.SplitN(msgLine, "=", 2)
+		if len(keyValue) == 2 {
+			key := keyValue[0]
+			value := keyValue[1]
+			message[key] = value
+		}
+	}
+
+	return message
+}
+
 func processConnection(conn net.Conn) {
 	defer conn.Close()
-	msgBuffer := bufio.NewReader(conn)
+
+	var buffer [1024] byte
 
 	for {
-		msg, err := msgBuffer.ReadString('\n')
+		size, err := conn.Read(buffer[:])
 		if err != nil {
-			fmt.Println("msgBuffer.ReadString('\n') failed:", err)
+			fmt.Println("conn.Read(buffer[:]) failed:", err)
 			return
 		}
 
-		msg = strings.TrimSpace(msg)
-		if strings.HasPrefix(msg, "type=") {
-			msgType := strings.TrimPrefix(msg, "type=")
+		message := readMessage(buffer[:size])
 
-			switch msgType {
-			case "JoinQueue":
-				conn.Write([]byte("type=QueueJoined\n"))
-			case "LeaveQueue":
-				conn.Write([]byte("type=QueueLeft\n"))
-			default:
-				// Unknown - do nothing
-			}
+		switch message["type"] {
+
+		case "JoinQueue":
+			conn.Write([]byte("type=QueueJoined\nSTOP\n"))
+		case "LeaveQueue":
+			conn.Write([]byte("type=QueueLeft\nSTOP\n"))
 		}
 	}
 }
