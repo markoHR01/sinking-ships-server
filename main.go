@@ -7,7 +7,7 @@ import (
 
 const serverPort = ":22335"
 
-func processClientMessages(client *Client) {
+func processClientMessages(client *Client, queue *Queue) {
 	defer client.Close()
 
 	for {
@@ -19,8 +19,10 @@ func processClientMessages(client *Client) {
 
 		switch message["type"] {
 		case "JoinQueue":
+			queue.Join(client)
 			client.SendMessage(Message{"type": "QueueJoined"})
 		case "LeaveQueue":
+			queue.Leave(client)
 			client.SendMessage(Message{"type": "QueueLeft"})
 		}
 	}
@@ -32,6 +34,8 @@ func main() {
 		panic(err)
 	}
 
+	queue := NewQueue()
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -40,6 +44,6 @@ func main() {
 		}
 
 		client := NewClient(conn)
-		go processClientMessages(client)
+		go processClientMessages(client, queue)
 	}
 }
