@@ -15,6 +15,7 @@ type Client struct {
 	out     chan Message
 	alive   atomic.Bool
 	kill    sync.Once
+	quit    chan struct{}
 }
 
 func NewClient(conn net.Conn) *Client {
@@ -22,6 +23,7 @@ func NewClient(conn net.Conn) *Client {
 		conn:  conn,
 		in:    make(chan Message, 3),
 		out:   make(chan Message, 3),
+		quit:  make(chan struct{})
 	}
 	client.alive.Store(true)
 
