@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"time"
 )
 
 const serverPort = ":22335"
@@ -31,8 +32,15 @@ func queueWorker(client *Client, queue *Queue) {
 	}
 }
 
-func matchWorker() {
-	// Missing - Not yet implemented
+func matchWorker(client1, client2 *Client) {
+
+	time.Sleep(10 * time.Millisecond)
+
+	close(client1.quit)
+	close(client2.quit)
+
+	client1.SendMessage(Message{"type": "MatchFound"})
+	client2.SendMessage(Message{"type": "MatchFound"})
 }
 
 func main() {
