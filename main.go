@@ -7,25 +7,32 @@ import (
 
 const serverPort = ":22335"
 
-func processClientMessages(client *Client, queue *Queue) {
-	defer client.Close()
-
+func queueWorker(client *Client, queue *Queue) {
 	for {
-		message, err := client.ReadMessage()
-		if err != nil {
-			fmt.Println("client.ReadMessage() failed:", err)
+		select {
+		case <- client.quit:
 			return
-		}
+		default:
+			message, err := client.ReadMessage()
+			if err != nil {
+				fmt.Println("client.ReadMessage() failed:", err)
+				return
+			}
 
-		switch message["type"] {
-		case "JoinQueue":
-			queue.Join(client)
-			client.SendMessage(Message{"type": "QueueJoined"})
-		case "LeaveQueue":
-			queue.Leave(client)
-			client.SendMessage(Message{"type": "QueueLeft"})
+			switch message["type"] {
+			case "JoinQueue":
+				queue.Join(client)
+				client.SendMessage(Message{"type": "QueueJoined"})
+			case "LeaveQueue":
+				queue.Leave(client)
+				client.SendMessage(Message{"type": "QueueLeft"})
+			}
 		}
 	}
+}
+
+func matchWorker() {
+	// Missing - Not yet implemented
 }
 
 func main() {
@@ -35,6 +42,8 @@ func main() {
 	}
 
 	queue := NewQueue()
+	// Start Queue Thread
+	// Pass-in the MatchWorker
 
 	for {
 		conn, err := listener.Accept()
@@ -44,6 +53,6 @@ func main() {
 		}
 
 		client := NewClient(conn)
-		go processClientMessages(client, queue)
+		go queueWorker(client, queue)
 	}
 }
