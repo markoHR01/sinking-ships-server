@@ -1,6 +1,9 @@
 package main
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 type Queue struct {
 	mu   sync.Mutex
@@ -10,6 +13,22 @@ type Queue struct {
 func NewQueue() *Queue {
 	return &Queue{
 		waiting: make([]*Client, 0),
+	}
+}
+
+func (q *Queue) Run(matchWorker func(*Client, *Client)) {
+	for {
+		time.Sleep(1 * time.Second)
+
+		q.mu.Lock()
+		for len(q.waiting) >= 2 {
+			c1 := q.waiting[0]
+			c2 := q.waiting[1]
+			q.waiting = q.waiting[2:]
+
+			go matchWorker(c1, c2)
+		}
+		q.mu.Unlock()
 	}
 }
 

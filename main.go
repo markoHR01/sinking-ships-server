@@ -42,8 +42,7 @@ func main() {
 	}
 
 	queue := NewQueue()
-	// Start Queue Thread
-	// Pass-in the MatchWorker
+	go queue.Run(matchWorker)
 
 	for {
 		conn, err := listener.Accept()
