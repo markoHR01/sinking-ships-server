@@ -23,7 +23,7 @@ func NewClient(conn net.Conn) *Client {
 		conn:  conn,
 		in:    make(chan Message, 3),
 		out:   make(chan Message, 3),
-		quit:  make(chan struct{})
+		quit:  make(chan struct{}),
 	}
 	client.alive.Store(true)
 
