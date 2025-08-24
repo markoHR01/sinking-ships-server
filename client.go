@@ -1,29 +1,29 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
-	"errors"
+	"fmt"
 	"time"
+	"errors"
 )
 
 type Client struct {
-	conn    net.Conn
-	in      chan Message
-	out     chan Message
-	alive   atomic.Bool
-	kill    sync.Once
-	quit    chan struct{}
+	conn        net.Conn
+	in          chan Message
+	out         chan Message
+	alive       atomic.Bool
+	kill        sync.Once
+	quitWorker  chan struct{}
 }
 
 func NewClient(conn net.Conn) *Client {
 	client := &Client {
-		conn:  conn,
-		in:    make(chan Message, 3),
-		out:   make(chan Message, 3),
-		quit:  make(chan struct{}),
+		conn:        conn,
+		in:          make(chan Message, 3),
+		out:         make(chan Message, 3),
+		quitWorker:  make(chan struct{}),
 	}
 	client.alive.Store(true)
 
@@ -33,42 +33,59 @@ func NewClient(conn net.Conn) *Client {
 	return client
 }
 
+func (c *Client) QuitWorkers() {
+	close(c.quitWorker)
+}
+
+func (c *Client) MakeQuitChannel() {
+	c.quitWorker = make(chan struct{})
+}
+
+func (c *Client) Close() {
+	c.kill.Do(func() {
+		c.alive.Store(false)
+		c.conn.Close()
+	})
+}
+
 func (c *Client) ReadMessage() (Message, error) {
 	if !c.alive.Load() {
-		err := errors.New("Connection is closed")
-		return Message{}, err
+		err := errors.New("Read Message : Error : Connection Closed")
+		return nil, err
 	}
 
 	select {
-	case message := <-c.in:
-		return message, nil
+	case m := <- c.in:
+		return m, nil
 	default:
-		return Message{}, nil
+		return nil, nil
 	}
 }
 
-func (c *Client) SendMessage(message Message) (bool, error) {
+func (c *Client) SendMessage(m Message) (bool, error) {
 	if !c.alive.Load() {
-		err := errors.New("Connection is closed")
+		err := errors.New("Send Message : Error : Connection Closed")
 		return false, err
 	}
 
 	select {
-	case c.out <- message:
+	case c.out <- m:
 		return true, nil
 	default:
+		fmt.Println("Output Buffer Overload : Message Dropped")
+
 		return false, nil
 	}
 }
 
 func (c *Client) receive() {
-
 	var buffer [1024] byte
 
 	for {
 		size, err := c.conn.Read(buffer[:])
 		if err != nil {
-			fmt.Println("c.conn.Read(buffer[:]) failed", err)
+			fmt.Println("Client : Read Error : ", err)
+
 			c.Close()
 			return
 		}
@@ -78,6 +95,7 @@ func (c *Client) receive() {
 		select {
 		case c.in <- message:
 		default:
+			fmt.Println("Input Buffer Overload : Message Dropped")
 		}
 	}
 }
@@ -85,31 +103,22 @@ func (c *Client) receive() {
 func (c *Client) send() {
 
 	for {
-		var message Message
 		select {
-		case message = <-c.out:
+		case message := <- c.out:
+			payload := []byte(Serialize(message))
+
+			if _, err := c.conn.Write(payload); err != nil {
+				fmt.Println("Client : Send Error : ", err)
+
+				c.Close()
+				return
+			}
 		default:
 			if !c.alive.Load() {
 				return
 			}
-			time.Sleep(100 * time.Millisecond)
-			continue
-		}
 
-		payload := []byte(Serialize(message))
-
-		_, err := c.conn.Write(payload)
-		if err != nil {
-			fmt.Println("c.conn.Write(payload) failed:", err)
-			c.Close()
-			return
+			time.Sleep(SendMessageWait)
 		}
 	}
-}
-
-func (c *Client) Close() {
-	c.kill.Do(func() {
-		c.alive.Store(false)
-		c.conn.Close()
-	})
 }
