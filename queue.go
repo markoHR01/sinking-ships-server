@@ -18,7 +18,7 @@ func NewQueue() *Queue {
 
 func (q *Queue) Run(matchWorker func(*Client, *Client)) {
 	for {
-		time.Sleep(1 * time.Second)
+		time.Sleep(QueueInterval)
 
 		q.mu.Lock()
 		for len(q.waiting) >= 2 {
