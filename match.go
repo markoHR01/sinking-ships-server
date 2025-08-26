@@ -1,5 +1,11 @@
 package main
 
+import (
+	"time"
+	"math/rand"
+	"strconv"
+)
+
 type Match struct {
 	player1  *Client
 	player2  *Client
