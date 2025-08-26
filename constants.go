@@ -6,4 +6,6 @@ const (
 	ServerPort       = ":22335"
 	QueueInterval    = 1 * time.Second
 	SendMessageWait  = 100 * time.Millisecond
+	WaitQueueExit    = 10 * time.Millisecond
+	WaitPlayerSetup  = 25 * time.Sencond
 )
