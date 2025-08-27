@@ -30,6 +30,10 @@ func CreateMatch(c1, c2 *Client) {
 	go matchWorker(NewMatch(c1, c2))
 }
 
+func (m *Match) Setup() error {
+	// ...
+}
+
 func (m *Match) SendMatchFound() {
 	msg := Message{"type": "MatchFound"}
 	m.player1.SendMessage(msg)

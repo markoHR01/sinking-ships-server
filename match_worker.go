@@ -7,9 +7,11 @@ func matchWorker(match *Match) {
 
 	time.Sleep(WaitPlayerSetup)
 
-	// Receive
-	// Parse
-	// Validate
+	if err := match.Setup(); err != nil {
+		fmt.Println("Setup :", err)
+		match.Quit()
+		return
+	}
 
 	match.SendMatchStart()
 }
