@@ -31,7 +31,12 @@ func CreateMatch(c1, c2 *Client) {
 }
 
 func (m *Match) Setup() error {
-	// ...
+	ships, err := GetPlayerShips(m)
+	if err != nil { return err }
+
+	m.ships1 = ships[0]
+	m.ships2 = ships[1]
+	return nil
 }
 
 func (m *Match) SendMatchFound() {
