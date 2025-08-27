@@ -49,3 +49,22 @@ func (m *Match) SendMatchStart() {
 	m.player1.SendMessage(msg1)
 	m.player2.SendMessage(msg2)
 }
+
+func (m *Match) Quit() {
+	m.SendMatchQuit()
+	m.EndMatch()
+}
+
+func (m *Match) SendMatchQuit() {
+	msg := Message{"type": "MatchQuit"}
+	m.player1.SendMessage(msg)
+	m.player2.SendMessage(msg)
+}
+
+func (m *Match) EndMatch() {
+	m.player1.MakeQuitChannel()
+	go queueWorker(m.player1)
+
+	m.player2.MakeQuitChannel()
+	go queueWorker(m.player2)
+}
