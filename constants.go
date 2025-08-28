@@ -8,4 +8,6 @@ const (
 	SendMessageWait  = 100 * time.Millisecond
 	WaitQueueExit    = 10 * time.Millisecond
 	WaitPlayerSetup  = 25 * time.Second
+	WaitPlayerShips  = 3 * time.Second
+	GSPWaitNextRead  = 450 * time.Millisecond
 )
