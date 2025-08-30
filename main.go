@@ -18,7 +18,7 @@ func main() {
 	}
 
 	queue := NewQueue()
-	go queue.Run(matchWorker)
+	go queue.Run()
 
 	for {
 		conn, err := listener.Accept()

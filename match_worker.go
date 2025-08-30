@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"time"
+	"fmt"
+)
 
 func matchWorker(match *Match) {
 	match.SendMatchFound()

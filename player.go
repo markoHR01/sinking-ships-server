@@ -82,10 +82,10 @@ func shipIsOK(ship [][2]int) bool {
 	return true
 }
 
-func getShips(messages []Message) ([][]*Ship, error) {
-	var ships [][]*Ship
+func getShips(messages []Message) ([][]Ship, error) {
+	var ships [][]Ship
 
-	for _, m := messages {
+	for _, m := range messages {
 		var shipXY [][2]int
 
 		idx := 0
@@ -132,7 +132,7 @@ func getShips(messages []Message) ([][]*Ship, error) {
 			start = end
 		}
 
-		start := 0
+		start = 0
 		var playerShips []*Ship
 		for _, size := range ShipSizes {
 			end := start + size
@@ -154,7 +154,7 @@ func getShips(messages []Message) ([][]*Ship, error) {
 	return ships, nil
 }
 
-func GetPlayerShips(m *Match) ([][]*Ship, error) {
+func GetPlayerShips(m *Match) ([][]Ship, error) {
 	messages, err := getShipPositions(m)
 	if err != nil { return nil, err }
 

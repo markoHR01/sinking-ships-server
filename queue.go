@@ -16,7 +16,7 @@ func NewQueue() *Queue {
 	}
 }
 
-func (q *Queue) Run(matchWorker func(*Client, *Client)) {
+func (q *Queue) Run() {
 	for {
 		time.Sleep(QueueInterval)
 
