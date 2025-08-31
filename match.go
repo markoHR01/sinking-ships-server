@@ -7,14 +7,16 @@ import (
 )
 
 type Match struct {
+	queue    *Queue
 	player1  *Client
 	player2  *Client
 	ships1   []Ship
 	ships2   []Ship
 }
 
-func NewMatch(c1, c2 *Client) *Match {
+func NewMatch(q *Queue, c1, c2 *Client) *Match {
 	match := &Match {
+		queue:    q,
 		player1:  c1,
 		player2:  c2,
 	}
@@ -22,12 +24,12 @@ func NewMatch(c1, c2 *Client) *Match {
 	return match
 }
 
-func CreateMatch(c1, c2 *Client) {
+func CreateMatch(q *Queue, c1, c2 *Client) {
 	time.Sleep(WaitQueueExit)
 	c1.QuitWorkers()
 	c2.QuitWorkers()
 
-	go matchWorker(NewMatch(c1, c2))
+	go matchWorker(NewMatch(q, c1, c2))
 }
 
 func (m *Match) Setup() error {
@@ -72,8 +74,8 @@ func (m *Match) SendMatchQuit() {
 
 func (m *Match) EndMatch() {
 	m.player1.MakeQuitChannel()
-	go queueWorker(m.player1)
+	go queueWorker(m.player1, m.queue)
 
 	m.player2.MakeQuitChannel()
-	go queueWorker(m.player2)
+	go queueWorker(m.player2, m.queue)
 }

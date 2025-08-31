@@ -26,7 +26,7 @@ func (q *Queue) Run() {
 			c2 := q.waiting[1]
 			q.waiting = q.waiting[2:]
 
-			go CreateMatch(c1, c2)
+			go CreateMatch(q, c1, c2)
 		}
 		q.mu.Unlock()
 	}
