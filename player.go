@@ -94,7 +94,7 @@ func getShips(messages []Message) ([][]Ship, error) {
 			key := strconv.Itoa(idx)
 			val, ok := m[key]
 			if !ok {
-				return nil, errors.New("Message : Corrupted")
+				return nil, errors.New("Message : Missing Index")
 			}
 
 			var x, y int
