@@ -17,4 +17,10 @@ func matchWorker(match *Match) {
 	}
 
 	match.SendMatchStart()
+
+	if err := match.Play(); err != nil {
+		fmt.Println("Match :", err)
+		match.Quit()
+		return
+	}
 }

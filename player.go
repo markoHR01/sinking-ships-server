@@ -164,3 +164,7 @@ func GetPlayerShips(m *Match) ([][]Ship, error) {
 
 	return ships, nil
 }
+
+func GetPlayerAttack(p *Client) (Message, bool, error) {
+	// Get player attack or timeout
+}

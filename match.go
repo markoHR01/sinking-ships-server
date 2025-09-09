@@ -41,6 +41,30 @@ func (m *Match) Setup() error {
 	return nil
 }
 
+func (m *Match) Play error {
+
+	for !match.IsGameOver() {
+		player := match.getAttacker()
+
+		message, timeout, err := GetPlayerAttack(player)
+		if err != nil { return err }
+
+		if timeout {
+			// Send No Attack, Switch Turns
+			// No Attack > 3 ? Match Quit
+			// continue
+		}
+
+		// Send Attack Result, Enemy Attack
+		// Switch Turns
+		// continue
+	}
+
+	return nil
+}
+
+func (m *Match) IsGameOver() bool {} // Check if player won/lost
+
 func (m *Match) SendMatchFound() {
 	msg := Message{"type": "MatchFound"}
 	m.player1.SendMessage(msg)
@@ -60,6 +84,12 @@ func (m *Match) SendMatchStart() {
 	m.player1.SendMessage(msg1)
 	m.player2.SendMessage(msg2)
 }
+
+func (m *Match) getAttacker() *Client {} // Get player (turn == true)
+
+func (m *Match) getDefender() *Client {} // Get player (turn == false)
+
+func (m *Match) nextTurn() {} // Switch players
 
 func (m *Match) Quit() {
 	m.SendMatchQuit()
