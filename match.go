@@ -12,6 +12,7 @@ type Match struct {
 	player2  *Client
 	ships1   []Ship
 	ships2   []Ship
+	turn     int
 }
 
 func NewMatch(q *Queue, c1, c2 *Client) *Match {
@@ -72,24 +73,37 @@ func (m *Match) SendMatchFound() {
 }
 
 func (m *Match) SendMatchStart() {
-	startFirst := rand.Intn(2) == 0
+	m.turn = rand.Intn(2)
+
 	msg1 := Message{
 		"type": "MatchStart",
-		"start-first": strconv.FormatBool(startFirst),
+		"start-first": strconv.FormatBool(m.turn == 0),
 	}
 	msg2 := Message{
 		"type": "MatchStart",
-		"start-first": strconv.FormatBool(!startFirst),
+		"start-first": strconv.FormatBool(m.turn == 1),
 	}
 	m.player1.SendMessage(msg1)
 	m.player2.SendMessage(msg2)
 }
 
-func (m *Match) getAttacker() *Client {} // Get player (turn == true)
+func (m *Match) getAttacker() *Client {
+	if m.turn == 0 {
+		return m.player1
+	}
+	return m.player2
+}
 
-func (m *Match) getDefender() *Client {} // Get player (turn == false)
+func (m *Match) getDefender() *Client {
+	if m.turn == 0 {
+		return m.player2
+	}
+	return m.player1
+}
 
-func (m *Match) nextTurn() {} // Switch players
+func (m *Match) nextTurn() {
+	m.turn = 1 - m.turn
+}
 
 func (m *Match) Quit() {
 	m.SendMatchQuit()
