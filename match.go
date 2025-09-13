@@ -43,6 +43,7 @@ func (m *Match) Setup() error {
 }
 
 func (m *Match) Play error {
+	noAttacks := 0
 
 	for !match.IsGameOver() {
 		player := match.getAttacker()
@@ -51,9 +52,14 @@ func (m *Match) Play error {
 		if err != nil { return err }
 
 		if timeout || !attackIsOK(message) {
-			// Send No Attack, Switch Turns
-			// No Attack > 3 ? Match Quit
-			// continue
+			if noAttacks++; noAttacks > NoAttackLimit {
+				match.Quit()
+				return nil
+			}
+
+			match.SendNoAttack()
+			match.nextTurn()
+			continue
 		}
 
 		// Send Attack Result, Enemy Attack
@@ -85,6 +91,12 @@ func (m *Match) SendMatchStart() {
 	}
 	m.player1.SendMessage(msg1)
 	m.player2.SendMessage(msg2)
+}
+
+func (m *Match) SendNoAttack() {
+	msg := Message{"type": "NoAttack"}
+	m.player1.SendMessage(msg)
+	m.player2.SendMessage(msg)
 }
 
 func (m *Match) getAttacker() *Client {
