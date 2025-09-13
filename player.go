@@ -203,3 +203,31 @@ func GetPlayerAttack(p *Client) (Message, bool, error) {
 
 	return nil, true, nil
 }
+
+func Attack(m *Match, x, y int) (bool, bool, int) {
+	var ships []Ship
+	if m.turn == 0 {
+		ships = m.ships2
+	} else {
+		ships = m.ships1
+	}
+
+	for shipIdx := range ships {
+		for i := range ships[shipIdx].Parts {
+			part := &ships[shipIdx].Parts[i]
+			if part.X == x && part.Y == y {
+				part.Hit = true
+
+				for _, p := range ships[shipIdx].Parts {
+					if !p.Hit {
+						return true, false, -1
+					}
+				}
+				ships[shipIdx].Sunk = true
+				return true, true, shipIdx
+			}
+		}
+	}
+
+	return false, false, -1
+}
