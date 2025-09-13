@@ -46,9 +46,10 @@ func (m *Match) Play error {
 	noAttacks := 0
 
 	for !match.IsGameOver() {
-		player := match.getAttacker()
+		attacker := match.getAttacker()
+		defender := match.getDefender()
 
-		message, timeout, err := GetPlayerAttack(player)
+		message, timeout, err := GetPlayerAttack(attacker)
 		if err != nil { return err }
 
 		if timeout || !attackIsOK(message) {
@@ -97,6 +98,37 @@ func (m *Match) SendNoAttack() {
 	msg := Message{"type": "NoAttack"}
 	m.player1.SendMessage(msg)
 	m.player2.SendMessage(msg)
+}
+
+func (m *Match) SendAttackResult(
+	attacker *Client,
+	x, y int,
+	hit, sunk bool,
+	sunkIndex int,
+) {
+	msg := Message{
+		"type": "AttackResult",
+		"X":    strconv.Itoa(x),
+		"Y":    strconv.Itoa(y),
+		"hit":  strconv.FormatBool(hit),
+		"sunk": strconv.FormatBool(sunk),
+	}
+	if sunk {
+		msg["sunk-index"] = strconv.Itoa(sunkIndex)
+	}
+	attacker.SendMessage(msg)
+}
+
+func (m *Match) SendEnemyAttack(
+	defender *Client,
+	x, y int,
+) {
+	msg := Message{
+		"type": "EnemyAttack",
+		"X":    strconv.Itoa(x),
+		"Y":    strconv.Itoa(y),
+	}
+	defender.SendMessage(msg)
 }
 
 func (m *Match) getAttacker() *Client {
