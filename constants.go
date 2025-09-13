@@ -11,6 +11,8 @@ const (
 	WaitPlayerShips  = 3 * time.Second
 	GSPWaitNextRead  = 450 * time.Millisecond
 	ShipPartsTotal   = 17
+	WaitTurn         = 10 * time.Second
+	PLYWaitNextRead  = 500 * time.Millisecond
 )
 
 var ShipSizes = [5]int{2, 3, 3, 4, 5}

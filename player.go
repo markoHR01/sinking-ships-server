@@ -166,5 +166,19 @@ func GetPlayerShips(m *Match) ([][]Ship, error) {
 }
 
 func GetPlayerAttack(p *Client) (Message, bool, error) {
-	// Get player attack or timeout
+	timelimit := time.Now().Add(WaitTurn)
+
+	for time.Now().Before(timelimit) {
+		if msg, err := p.ReadMessage(); err != nil {
+			return nil, false, errors.New("Client : Error")
+		} else if msg != nil {
+			if msg["type"] == "Attack" {
+				return msg, false, nil
+			}
+		}
+
+		time.Sleep(PLYWaitNextRead)
+	}
+
+	return nil, true, nil
 }
