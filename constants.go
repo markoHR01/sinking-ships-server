@@ -13,6 +13,8 @@ const (
 	ShipPartsTotal   = 17
 	WaitTurn         = 10 * time.Second
 	PLYWaitNextRead  = 500 * time.Millisecond
+	BoardIndexMin    = 0
+	BoardIndexMax    = 9
 )
 
 var ShipSizes = [5]int{2, 3, 3, 4, 5}

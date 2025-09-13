@@ -165,6 +165,27 @@ func GetPlayerShips(m *Match) ([][]Ship, error) {
 	return ships, nil
 }
 
+func attackIsOK(message Message) bool {
+	xKey, okX := message["X"]
+	yKey, okY := message["Y"]
+	if !okX || !okY {
+		return false
+	}
+
+	x, errX := strconv.Atoi(xKey)
+	y, errY := strconv.Atoi(yKey)
+	if errX != nil || errY != nil {
+		return false
+	}
+
+	if x < BoardIndexMin || x > BoardIndexMax ||
+	   y < BoardIndexMin || y > BoardIndexMax {
+		return false
+	}
+
+	return true
+}
+
 func GetPlayerAttack(p *Client) (Message, bool, error) {
 	timelimit := time.Now().Add(WaitTurn)
 

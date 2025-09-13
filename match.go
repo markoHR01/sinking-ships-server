@@ -50,7 +50,7 @@ func (m *Match) Play error {
 		message, timeout, err := GetPlayerAttack(player)
 		if err != nil { return err }
 
-		if timeout {
+		if timeout || !attackIsOK(message) {
 			// Send No Attack, Switch Turns
 			// No Attack > 3 ? Match Quit
 			// continue
