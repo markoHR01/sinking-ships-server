@@ -46,8 +46,8 @@ func (m *Match) Play error {
 	noAttacks := 0
 
 	for !match.IsGameOver() {
-		attacker := match.getAttacker()
-		defender := match.getDefender()
+		attacker := m.getAttacker()
+		defender := m.getDefender()
 
 		message, timeout, err := GetPlayerAttack(attacker)
 		if err != nil { return err }
@@ -58,20 +58,47 @@ func (m *Match) Play error {
 				return nil
 			}
 
-			match.SendNoAttack()
-			match.nextTurn()
+			m.SendNoAttack()
+			m.nextTurn()
 			continue
 		}
 
-		// Send Attack Result, Enemy Attack
-		// Switch Turns
-		// continue
+		m.PlayTurn(message)
+		m.nextTurn()
 	}
 
 	return nil
 }
 
-func (m *Match) IsGameOver() bool {} // Check if player won/lost
+func (m *Match) PlayTurn(msg Message) {
+	x, _ := strconv.Atoi(msg["X"])
+	y, _ := strconv.Atoi(msg["Y"])
+
+	hit, sunk, sunkIndex := Attack(m, x, y)
+
+	m.SendAttackResult(x, y, hit, sunk, sunkIndex)
+	m.SendEnemyAttack(x, y)
+}
+
+func (m *Match) IsGameOver() bool {
+	p1Loss := true
+	for _, ship := range m.ships1 {
+		if !ship.Sunk {
+			p1Loss = false
+			break
+		}
+	}
+
+	p2Loss := true
+	for _, ship := range m.ships2 {
+		if !ship.Sunk {
+			p2Loss = false
+			break
+		}
+	}
+
+	return p1Loss || p2Loss
+}
 
 func (m *Match) SendMatchFound() {
 	msg := Message{"type": "MatchFound"}
@@ -101,7 +128,6 @@ func (m *Match) SendNoAttack() {
 }
 
 func (m *Match) SendAttackResult(
-	attacker *Client,
 	x, y int,
 	hit, sunk bool,
 	sunkIndex int,
@@ -116,11 +142,10 @@ func (m *Match) SendAttackResult(
 	if sunk {
 		msg["sunk-index"] = strconv.Itoa(sunkIndex)
 	}
-	attacker.SendMessage(msg)
+	m.getAttacker().SendMessage(msg)
 }
 
 func (m *Match) SendEnemyAttack(
-	defender *Client,
 	x, y int,
 ) {
 	msg := Message{
@@ -128,7 +153,7 @@ func (m *Match) SendEnemyAttack(
 		"X":    strconv.Itoa(x),
 		"Y":    strconv.Itoa(y),
 	}
-	defender.SendMessage(msg)
+	m.getDefender().SendMessage(msg)
 }
 
 func (m *Match) getAttacker() *Client {
