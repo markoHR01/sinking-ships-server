@@ -42,19 +42,18 @@ func (m *Match) Setup() error {
 	return nil
 }
 
-func (m *Match) Play error {
+func (m *Match) Play() error {
 	noAttacks := 0
 
-	for !match.IsGameOver() {
+	for !m.IsGameOver() {
 		attacker := m.getAttacker()
-		defender := m.getDefender()
 
 		message, timeout, err := GetPlayerAttack(attacker)
 		if err != nil { return err }
 
 		if timeout || !attackIsOK(message) {
 			if noAttacks++; noAttacks > NoAttackLimit {
-				match.Quit()
+				m.Quit()
 				return nil
 			}
 
