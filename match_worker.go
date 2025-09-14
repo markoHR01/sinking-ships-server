@@ -23,4 +23,6 @@ func matchWorker(match *Match) {
 		match.Quit()
 		return
 	}
+
+	match.EndMatch()
 }
